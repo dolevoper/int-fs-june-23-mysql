@@ -10,7 +10,7 @@ const app = express();
 
 app.get("/students", async (req, res) => {
     try {
-        const [students] = await dbConnection.query("SELECT id, first_name, lastName, email FROM students");
+        const [students] = await dbConnection.query("SELECT id, firstName, lastName, email FROM students");
 
         res.status(200);
         res.json(students);
@@ -34,7 +34,8 @@ async function runApp() {
         host: "localhost",
         user: "root",
         password: process.env.DB_PASSWORD,
-        database: "school"
+        database: "school",
+        multipleStatements: true
     });
 
     try {
