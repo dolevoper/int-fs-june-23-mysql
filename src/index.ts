@@ -9,9 +9,18 @@ const app = express();
 
 app.use(json());
 
+const studentsPageSize = 2;
 app.get("/students", async (req, res) => {
     try {
-        const [students] = await dbConnection.query("SELECT id, firstName, lastName, email FROM students");
+        const requestedPage = Number(req.query.page);
+        const offset = isNaN(requestedPage) || !Number.isInteger(requestedPage) ?
+            0 :
+            (requestedPage - 1) * studentsPageSize;
+        const [students] = await dbConnection.query(
+            `SELECT id, firstName, lastName, email
+            FROM students
+            LIMIT ${studentsPageSize} OFFSET ${offset}`
+        );
 
         res.status(200);
         res.json(students);
