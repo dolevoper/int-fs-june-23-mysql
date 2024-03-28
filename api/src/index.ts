@@ -2,24 +2,29 @@ import "dotenv/config";
 
 import { Connection, RowDataPacket, createConnection } from "mysql2/promise";
 import express from "express";
+import cors from "cors";
 import { json } from "body-parser";
 
 let dbConnection: Connection;
 const app = express();
 
+app.use(cors());
 app.use(json());
 
 const studentsPageSize = 2;
 app.get("/students", async (req, res) => {
     try {
+        const search = req.query.search && String(req.query.search);
         const requestedPage = Number(req.query.page);
         const offset = isNaN(requestedPage) || !Number.isInteger(requestedPage) ?
             0 :
             (requestedPage - 1) * studentsPageSize;
-        const [students] = await dbConnection.query(
+        const [students] = await dbConnection.execute(
             `SELECT id, firstName, lastName, email
             FROM students
-            LIMIT ${studentsPageSize} OFFSET ${offset}`
+            ${search ? "WHERE firstName LIKE ? OR lastName LIKE ? OR email LIKE ?" : ""}
+            LIMIT ${studentsPageSize} OFFSET ${offset}`,
+            [`${search}%`, `${search}%`, `${search}%`]
         );
 
         res.status(200);
