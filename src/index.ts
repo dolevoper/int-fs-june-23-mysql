@@ -1,6 +1,6 @@
 import "dotenv/config";
 
-import { Connection, createConnection } from "mysql2/promise";
+import { Connection, RowDataPacket, createConnection } from "mysql2/promise";
 import express from "express";
 
 let dbConnection: Connection;
@@ -21,7 +21,32 @@ app.get("/students", async (req, res) => {
     }
 });
 
-app.get("/students/:id", async (req, res) => { });
+app.get("/students/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const [students] = await dbConnection.execute(
+            `SELECT id, firstName, lastName, email
+            FROM students
+            WHERE id = ?`,
+            [id]
+        );
+
+        const [student] = students as RowDataPacket[];
+
+        if (!student) {
+            res.status(404);
+            res.json({ error: "student not found" });
+            return;
+        }
+
+        res.status(200);
+        res.json(student);
+    } catch (err) {
+        console.error(err);
+        res.status(500);
+        res.json({ error: "something went wrong" });
+    }
+});
 
 app.post("/students", async (req, res) => { });
 
@@ -34,8 +59,7 @@ async function runApp() {
         host: "localhost",
         user: "root",
         password: process.env.DB_PASSWORD,
-        database: "school",
-        multipleStatements: true
+        database: "school"
     });
 
     try {
