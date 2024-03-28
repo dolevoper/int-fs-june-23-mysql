@@ -19,42 +19,46 @@ export async function loader({ request }: LoaderFunctionArgs) {
   return res.data;
 }
 
+function useStudents() {
+  return useLoaderData() as Student[];
+}
+
 export default function StudentsPage() {
-  const data = useLoaderData() as Student[];
-
-  if (!data.length) {
-    return (
-      <div className={styles.wrapper}>
-        <Search />
-        <p>No students to show.</p>
-        <Pagination disableNext />
-      </div>
-    );
-  }
-
   return (
     <div className={styles.wrapper}>
       <Search />
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <td>Last Name</td>
-            <td>First Name</td>
-            <td>Email</td>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((student) => (
-            <tr key={student.id}>
-              <td>{student.lastName}</td>
-              <td>{student.firstName}</td>
-              <td>{student.email}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Results />
       <Pagination />
     </div>
+  );
+}
+
+function Results() {
+  const students = useStudents();
+
+  if (!students.length) {
+    return <p>No students to show.</p>;
+  }
+
+  return (
+    <table className={styles.table}>
+      <thead>
+        <tr>
+          <td>Last Name</td>
+          <td>First Name</td>
+          <td>Email</td>
+        </tr>
+      </thead>
+      <tbody>
+        {students.map((student) => (
+          <tr key={student.id}>
+            <td>{student.lastName}</td>
+            <td>{student.firstName}</td>
+            <td>{student.email}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   );
 }
 
@@ -80,11 +84,8 @@ function Search() {
   );
 }
 
-type PaginationProps = {
-  disableNext?: boolean;
-};
-
-function Pagination({ disableNext }: PaginationProps) {
+function Pagination() {
+  const students = useStudents();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const currentPage = searchParams.has("page")
@@ -117,7 +118,7 @@ function Pagination({ disableNext }: PaginationProps) {
         ⬅️
       </button>
       <p>Showing page {currentPage}</p>
-      <button disabled={disableNext} title="Next page" onClick={nextPage}>
+      <button disabled={!students.length} title="Next page" onClick={nextPage}>
         ➡️
       </button>
     </article>
