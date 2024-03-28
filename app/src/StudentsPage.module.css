@@ -1,0 +1,25 @@
+.wrapper {
+    display: grid;
+    width: 100vw;
+    height: min(50ex, 100vh - 2rem);
+    grid-template-rows: auto 1fr auto;
+    row-gap: 1rem;
+    align-items: start;
+}
+
+.table td {
+    padding: 0.5em 1em;
+}
+
+.search {
+    display: flex;
+    gap: 1rem;
+    align-items: baseline;
+    justify-content: center;
+}
+
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
