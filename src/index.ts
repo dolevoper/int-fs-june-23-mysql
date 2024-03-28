@@ -2,11 +2,12 @@ import "dotenv/config";
 
 import { Connection, RowDataPacket, createConnection } from "mysql2/promise";
 import express from "express";
+import { json } from "body-parser";
 
 let dbConnection: Connection;
 const app = express();
 
-// CRUD - Create Read Update Delete
+app.use(json());
 
 app.get("/students", async (req, res) => {
     try {
@@ -48,11 +49,69 @@ app.get("/students/:id", async (req, res) => {
     }
 });
 
-app.post("/students", async (req, res) => { });
+app.post("/students", async (req, res) => {
+    try {
+        const {
+            id,
+            firstName,
+            lastName,
+            email
+        } = req.body;
 
-app.put("/students/:id", async (req, res) => { });
+        dbConnection.execute(
+            `INSERT INTO students (id, firstName, lastName, email)
+            VALUES (?, ?, ?, ?)`,
+            [id ?? crypto.randomUUID(), firstName, lastName, email]
+        );
 
-app.delete("/students/:id", async (req, res) => { });
+        res.status(201);
+        res.end();
+    } catch (err) {
+        console.error(err);
+        res.status(500);
+        res.json({ error: "something went wrong" });
+    }
+});
+
+app.put("/students/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { firstName, lastName, email } = req.body;
+
+        dbConnection.execute(
+            `UPDATE students
+            SET firstName = ?, lastName = ?, email = ?
+            WHERE id = ?`,
+            [firstName, lastName, email, id]
+        );
+
+        res.status(204);
+        res.end();
+    } catch (err) {
+        console.error(err);
+        res.status(500);
+        res.json({ error: "something went wrong" });
+    }
+});
+
+app.delete("/students/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        dbConnection.execute(
+            `DELETE FROM students
+            WHERE id = ?`,
+            [id]
+        );
+
+        res.status(204);
+        res.end();
+    } catch (err) {
+        console.error(err);
+        res.status(500);
+        res.json({ error: "something went wrong" });
+    }
+});
 
 async function runApp() {
     dbConnection = await createConnection({
