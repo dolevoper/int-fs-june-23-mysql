@@ -77,7 +77,7 @@ function Search() {
 
           nextSearchParams.set("search", e.currentTarget.value);
 
-          setSearchParams(nextSearchParams);
+          setSearchParams(nextSearchParams, { replace: true });
         }}
       />
     </form>
